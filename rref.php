@@ -1,10 +1,3 @@
-<html>
-<head>
-<title>RREF</title>
-</head>
-<body>
-	<a href='/'>Home</a>
-	<br>
 <?php
 	function printarray($array){
 		echo '<table><tbody>';
@@ -33,6 +26,24 @@
 				return -1;
 		}
 		return $i;
+	}
+
+	function lastPivot($array, $currentrow, $cols){
+		$r = $currentrow;
+		$c = 0;
+		while($c < $cols){
+			if($array[$r][$c] !=0)
+				break 1;
+			$c++;
+		}
+		if($c < $cols){
+			if($array[$r][$c] != 0)
+				return $c;
+			else
+				return -1;
+		}
+		else
+			return -1;
 	}
 
 	function interchangeRows($r1, $r2, $array){
@@ -100,7 +111,7 @@
 	}
 
 	function reducedEchelonForm($a, $rows, $cols){
-		$array = echelonForm($a, $rows, $cols);
+		$array = $a;
 		$currow = $rows - 1;
 		for($i = $cols - 1; $i >= 0; $i--){
 			if($currow > 0){
@@ -110,42 +121,36 @@
 				$currow--;
 			}
 		}
-		printarray($array);
+		return $array;
 	}
 
-	function lastPivot($array, $currentrow, $cols){
-		$r = $currentrow;
-		$c = 0;
-		while($c < $cols){
-			if($array[$r][$c] !=0)
-				break 1;
-			$c++;
+	function cleanArray($array, $rows, $cols){
+		for($i = 0; $i < $rows; $i++){
+			for($j = 0; $j < $cols; $j++){
+				if($array[$i][$j] == 0){
+					$array[$i][$j] = 0;
+				}
+			}
 		}
-		if($c < $cols){
-			if($array[$r][$c] != 0)
-				return $c;
-			else
-				return -1;
-		}
-		else
-			return -1;
+		return $array;
 	}
 
-	$rows = $_POST['r'];
-	$cols = $_POST['c'];
-	$array = array();
-	for($i = 0; $i < $rows; $i++){
-		$innerarray = array();
-		for($j = 0; $j < $cols; $j++){
-			array_push($innerarray, $_POST[$i.'-'.$j]);
+	function main(){
+		$rows = $_POST['r'];
+		$cols = $_POST['c'];
+		$array = array();
+		for($i = 0; $i < $rows; $i++){
+			$innerarray = array();
+			for($j = 0; $j < $cols; $j++){
+				array_push($innerarray, $_POST[$i.'-'.$j]);
+			}
+			array_push($array, $innerarray);
 		}
-		array_push($array, $innerarray);
+		$echelonarray = cleanArray(echelonForm($array, $rows, $cols), $rows, $cols);
+		$array = cleanArray(reducedEchelonForm($echelonarray, $rows, $cols), $rows, $cols);
+		$arraymerge = array($echelonarray, $array);
+		echo json_encode($arraymerge);
 	}
-	printarray($array);
-	echo "<br><hr>Row Reduced Echelon Form:<br>";
-	reducedEchelonForm($array, $rows, $cols);
-	
 
+	main();
 ?>
-</body>
-</html>
