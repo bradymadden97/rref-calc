@@ -53,17 +53,32 @@
 		return $array;
 	}
 
-	function reduceRows($pivotrow, $pivotcol, $array, $rows, $cols){
+	function reduceRows($pivotrow, $pivotcol, $direction, $array, $rows, $cols){
 		$prow = $array[$pivotrow];
-		for($i = $pivotrow + 1; $i < $rows; $i++){
-			if($array[$i][$pivotcol] != 0){
-				$mult = $array[$i][$pivotcol] * (-1);
-				for($j = $pivotcol; $j < $cols; $j++){
-					$array[$i][$j] = ($prow[$j] * $mult) + $array[$i][$j];
+
+		if($direction == 'down'){
+			for($i = $pivotrow + 1; $i < $rows; $i++){
+				if($array[$i][$pivotcol] != 0){
+					$mult = $array[$i][$pivotcol] * (-1);
+					for($j = $pivotcol; $j < $cols; $j++){
+						$array[$i][$j] = ($prow[$j] * $mult) + $array[$i][$j];
+					}
 				}
 			}
+			return $array;
 		}
-		return $array;
+		else{
+			for($i = $pivotrow - 1; $i >= 0; $i--){
+				if($array[$i][$pivotcol] != 0){
+					$mult = $array[$i][$pivotcol] * (-1);
+					for($j = 0; $j < $cols; $j++){
+						$array[$i][$j] = ($prow[$j] * $mult) + $array[$i][$j];
+					}
+				}
+			}
+			return $array;
+		}
+		
 	}
 
 	function echelonForm($a, $rows, $cols){
@@ -73,16 +88,47 @@
 			if($startcol < $cols){
 				$pivot = findPivot($array, $i, $startcol);
 				if($pivot != -1){
-					if($pivot != 0){
+					if($pivot != 0)
 						$array = interchangeRows($i, $pivot, $array);
-					}
 					$array = pivotToOne($i, $startcol, $array);
-					$array = reduceRows($i, $startcol, $array, $rows, $cols);
+					$array = reduceRows($i, $startcol, 'down', $array, $rows, $cols);
 				}
 				$startcol++;
 			}
 		}
+		return $array;
+	}
+
+	function reducedEchelonForm($a, $rows, $cols){
+		$array = echelonForm($a, $rows, $cols);
+		$currow = $rows - 1;
+		for($i = $cols - 1; $i >= 0; $i--){
+			if($currow > 0){
+				$pivot = lastPivot($array, $currow, $cols);
+				if($pivot > 0)
+					$array = reduceRows($currow, $pivot, 'up', $array, $rows, $cols);
+				$currow--;
+			}
+		}
 		printarray($array);
+	}
+
+	function lastPivot($array, $currentrow, $cols){
+		$r = $currentrow;
+		$c = 0;
+		while($c < $cols){
+			if($array[$r][$c] !=0)
+				break 1;
+			$c++;
+		}
+		if($c < $cols){
+			if($array[$r][$c] != 0)
+				return $c;
+			else
+				return -1;
+		}
+		else
+			return -1;
 	}
 
 	$rows = $_POST['r'];
@@ -96,8 +142,8 @@
 		array_push($array, $innerarray);
 	}
 	printarray($array);
-	echo "<br><hr>Echelon Form:<br>";
-	echelonForm($array, $rows, $cols);
+	echo "<br><hr>Row Reduced Echelon Form:<br>";
+	reducedEchelonForm($array, $rows, $cols);
 	
 
 ?>
